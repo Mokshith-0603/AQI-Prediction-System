@@ -47,7 +47,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # --------------------------------------------------
-# LOAD MODELS
+# LOAD MODELS (SAFE)
 # --------------------------------------------------
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -55,7 +55,10 @@ RF_MODEL_PATH = os.path.join(BASE_DIR, "..", "models", "aqi_model.pkl")
 XGB_MODEL_PATH = os.path.join(BASE_DIR, "..", "models", "aqi_xgboost_model.pkl")
 SCALER_PATH = os.path.join(BASE_DIR, "..", "models", "scaler.pkl")
 
-rf_model = joblib.load(RF_MODEL_PATH)
+rf_model = None
+if os.path.exists(RF_MODEL_PATH):
+    rf_model = joblib.load(RF_MODEL_PATH)
+
 xgb_model = joblib.load(XGB_MODEL_PATH)
 scaler = joblib.load(SCALER_PATH)
 
@@ -103,17 +106,18 @@ def category_color(category):
 # --------------------------------------------------
 st.markdown("<div class='title'>🌍 AQI Prediction System</div>", unsafe_allow_html=True)
 st.markdown(
-    "<div class='subtitle'>Compare Random Forest vs XGBoost for AQI Prediction</div>",
+    "<div class='subtitle'>Compare Machine Learning Models for AQI Prediction</div>",
     unsafe_allow_html=True
 )
 
 # --------------------------------------------------
 # MODEL SELECTION
 # --------------------------------------------------
-model_choice = st.selectbox(
-    "Select Prediction Model",
-    ["Random Forest", "XGBoost"]
-)
+model_options = ["XGBoost"]
+if rf_model is not None:
+    model_options.insert(0, "Random Forest")
+
+model_choice = st.selectbox("Select Prediction Model", model_options)
 
 # --------------------------------------------------
 # INPUT CARD
@@ -137,8 +141,8 @@ if st.button("🚀 Predict AQI"):
     data = np.array([[pm25, pm10, no2, so2, co, o3, month]])
 
     if model_choice == "Random Forest":
-        data_input = scaler.transform(data)
-        prediction = rf_model.predict(data_input)[0]
+        data_scaled = scaler.transform(data)
+        prediction = rf_model.predict(data_scaled)[0]
     else:
         prediction = xgb_model.predict(data)[0]
 
@@ -162,7 +166,7 @@ if st.button("🚀 Predict AQI"):
 st.markdown("---")
 st.markdown("""
 <div style="text-align:center; color:#90a4ae;">
-<b>Models:</b> Random Forest & XGBoost<br>
+<b>Models:</b> XGBoost (Primary), Random Forest (Optional)<br>
 <b>Dataset:</b> India AQI (2015–2020)<br>
 Machine Learning • Streamlit • Scikit-Learn
 </div>
