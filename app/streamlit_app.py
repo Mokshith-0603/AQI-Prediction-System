@@ -46,7 +46,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
- समेत
+ 
 # --------------------------------------------------
 # LOAD MODEL & SCALER (NO CHANGES TO FILES)
 # --------------------------------------------------
