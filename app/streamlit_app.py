@@ -112,14 +112,8 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# --------------------------------------------------
-# MODEL SELECTION
-# --------------------------------------------------
-model_options = ["XGBoost"]
-if rf_model is not None:
-    model_options.insert(0, "Random Forest")
 
-model_choice = st.selectbox("Select Prediction Model", model_options)
+model_choice = "XGBoost"
 
 # --------------------------------------------------
 # INPUT CARD
@@ -152,7 +146,7 @@ if st.button("🚀 Predict AQI"):
 
     st.markdown("<div class='card'>", unsafe_allow_html=True)
     st.success(f"**Predicted AQI:** {round(prediction, 2)}")
-    st.caption(f"Model Used: **{model_choice}**")
+    
 
     st.markdown(
         f"<h3 style='color:{category_color(category)}'>AQI Category: {category}</h3>",
@@ -168,7 +162,7 @@ if st.button("🚀 Predict AQI"):
 st.markdown("---")
 st.markdown("""
 <div style="text-align:center; color:#90a4ae;">
-<b>Model:</b> XGBoost Regressor<br>
+<b>AQI Prediction System:</b> <br>
 <b>Dataset:</b> India AQI (2015–2020)<br>
 Machine Learning • Streamlit • Scikit-Learn
 </div>
