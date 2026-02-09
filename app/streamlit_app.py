@@ -47,14 +47,19 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # --------------------------------------------------
-# LOAD MODEL & SCALER (SAFE)
+# LOAD MODELS (SAFE)
 # --------------------------------------------------
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-MODEL_PATH = os.path.join(BASE_DIR, "..", "models", "aqi_xgboost_model.pkl")
+RF_MODEL_PATH = os.path.join(BASE_DIR, "..", "models", "aqi_model.pkl")
+XGB_MODEL_PATH = os.path.join(BASE_DIR, "..", "models", "aqi_xgboost_model.pkl")
 SCALER_PATH = os.path.join(BASE_DIR, "..", "models", "scaler.pkl")
 
-model = joblib.load(MODEL_PATH)
+rf_model = None
+if os.path.exists(RF_MODEL_PATH):
+    rf_model = joblib.load(RF_MODEL_PATH)
+
+xgb_model = joblib.load(XGB_MODEL_PATH)
 scaler = joblib.load(SCALER_PATH)
 
 # --------------------------------------------------
@@ -74,6 +79,7 @@ def aqi_category(aqi):
     else:
         return "Severe"
 
+
 def health_advisory(category):
     advice = {
         "Good": "Air quality is satisfactory. Ideal for outdoor activities.",
@@ -84,6 +90,7 @@ def health_advisory(category):
         "Severe": "Health alert! Everyone should stay indoors."
     }
     return advice[category]
+
 
 def category_color(category):
     colors = {
@@ -101,9 +108,18 @@ def category_color(category):
 # --------------------------------------------------
 st.markdown("<div class='title'>🌍 AQI Prediction System</div>", unsafe_allow_html=True)
 st.markdown(
-    "<div class='subtitle'>Random Forest based Air Quality Index Prediction</div>",
+    "<div class='subtitle'>Compare Machine Learning Models for AQI Prediction</div>",
     unsafe_allow_html=True
 )
+
+# --------------------------------------------------
+# MODEL SELECTION
+# --------------------------------------------------
+model_options = ["XGBoost"]
+if rf_model is not None:
+    model_options.insert(0, "Random Forest")
+
+model_choice = st.selectbox("Select Prediction Model", model_options)
 
 # --------------------------------------------------
 # INPUT CARD
@@ -112,10 +128,10 @@ st.markdown("<div class='card'>", unsafe_allow_html=True)
 
 pm25 = st.number_input("PM2.5 (µg/m³)", 0.0, 1000.0, 50.0)
 pm10 = st.number_input("PM10 (µg/m³)", 0.0, 1000.0, 80.0)
-no2  = st.number_input("NO₂ (µg/m³)", 0.0, 500.0, 40.0)
-so2  = st.number_input("SO₂ (µg/m³)", 0.0, 500.0, 15.0)
-co   = st.number_input("CO (mg/m³)", 0.0, 50.0, 1.2)
-o3   = st.number_input("O₃ (µg/m³)", 0.0, 500.0, 30.0)
+no2 = st.number_input("NO₂ (µg/m³)", 0.0, 500.0, 40.0)
+so2 = st.number_input("SO₂ (µg/m³)", 0.0, 500.0, 15.0)
+co = st.number_input("CO (mg/m³)", 0.0, 50.0, 1.2)
+o3 = st.number_input("O₃ (µg/m³)", 0.0, 500.0, 30.0)
 month = st.selectbox("Month", list(range(1, 13)))
 
 st.markdown("</div>", unsafe_allow_html=True)
@@ -125,14 +141,18 @@ st.markdown("</div>", unsafe_allow_html=True)
 # --------------------------------------------------
 if st.button("🚀 Predict AQI"):
     data = np.array([[pm25, pm10, no2, so2, co, o3, month]])
-    data_scaled = scaler.transform(data)
 
-    prediction = model.predict(data_scaled)[0]
+    if model_choice == "Random Forest":
+        data_scaled = scaler.transform(data)
+        prediction = rf_model.predict(data_scaled)[0]
+    else:
+        prediction = xgb_model.predict(data)[0]
+
     category = aqi_category(prediction)
 
     st.markdown("<div class='card'>", unsafe_allow_html=True)
     st.success(f"**Predicted AQI:** {round(prediction, 2)}")
-    st.caption("Model Used: **Random Forest Regressor**")
+    st.caption(f"Model Used: **{model_choice}**")
 
     st.markdown(
         f"<h3 style='color:{category_color(category)}'>AQI Category: {category}</h3>",
@@ -148,7 +168,7 @@ if st.button("🚀 Predict AQI"):
 st.markdown("---")
 st.markdown("""
 <div style="text-align:center; color:#90a4ae;">
-<b>Model:</b> Random Forest Regressor<br>
+<b>Models:</b> XGBoost (Primary), Random Forest (Optional)<br>
 <b>Dataset:</b> India AQI (2015–2020)<br>
 Machine Learning • Streamlit • Scikit-Learn
 </div>
