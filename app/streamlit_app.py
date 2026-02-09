@@ -108,7 +108,7 @@ def category_color(category):
 # --------------------------------------------------
 st.markdown("<div class='title'>🌍 AQI Prediction System</div>", unsafe_allow_html=True)
 st.markdown(
-    "<div class='subtitle'>XGBoost based Air Quality Index Prediction</div>",
+    "<div class='subtitle'>Air Quality Index Prediction</div>",
     unsafe_allow_html=True
 )
 
