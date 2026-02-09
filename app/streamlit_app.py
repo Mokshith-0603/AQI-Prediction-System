@@ -108,7 +108,7 @@ def category_color(category):
 # --------------------------------------------------
 st.markdown("<div class='title'>🌍 AQI Prediction System</div>", unsafe_allow_html=True)
 st.markdown(
-    "<div class='subtitle'>Compare Machine Learning Models for AQI Prediction</div>",
+    "<div class='subtitle'>XGBoost based Air Quality Index Prediction</div>",
     unsafe_allow_html=True
 )
 
@@ -168,7 +168,7 @@ if st.button("🚀 Predict AQI"):
 st.markdown("---")
 st.markdown("""
 <div style="text-align:center; color:#90a4ae;">
-<b>Models:</b> XGBoost (Primary), Random Forest (Optional)<br>
+<b>Model:</b> XGBoost Regressor<br>
 <b>Dataset:</b> India AQI (2015–2020)<br>
 Machine Learning • Streamlit • Scikit-Learn
 </div>
