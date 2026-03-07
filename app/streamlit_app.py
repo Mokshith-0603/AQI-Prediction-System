@@ -55,7 +55,7 @@ MODEL_PATH = os.path.join(BASE_DIR, "..", "models", "aqi_xgboost_model.pkl")
 model = joblib.load(MODEL_PATH)
 
 # --------------------------------------------------
-# AQI CATEGORY LOGIC
+# AQI CATEGORY
 # --------------------------------------------------
 def aqi_category(aqi):
     if aqi <= 50:
@@ -71,7 +71,6 @@ def aqi_category(aqi):
     else:
         return "Severe"
 
-
 def health_advisory(category):
     advice = {
         "Good": "Air quality is satisfactory. Ideal for outdoor activities.",
@@ -82,7 +81,6 @@ def health_advisory(category):
         "Severe": "Health alert! Everyone should stay indoors."
     }
     return advice[category]
-
 
 def category_color(category):
     colors = {
@@ -118,7 +116,7 @@ o3 = st.number_input("O₃ (µg/m³)", 0.0, 500.0, 30.0)
 
 month = st.selectbox("Month", list(range(1, 13)))
 day = st.slider("Day", 1, 31, 15)
-
+year = st.number_input("Year", 2010, 2035, 2024)
 
 st.markdown("</div>", unsafe_allow_html=True)
 
@@ -127,7 +125,7 @@ st.markdown("</div>", unsafe_allow_html=True)
 # --------------------------------------------------
 if st.button("🚀 Predict AQI"):
 
-    # -------- Feature Engineering (same as training) --------
+    # Feature Engineering (same as training)
     pm_ratio = pm25 / (pm10 + 1)
     pm_interaction = pm25 * pm10
 
@@ -137,25 +135,26 @@ if st.button("🚀 Predict AQI"):
 
     pm25_rolling = pm25
 
+    # MODEL INPUT (15 FEATURES)
     data = np.array([[
         pm25, pm10, no2, so2, co, o3,
-        month, day, 
+        month, day, year,
         pm_ratio, pm_interaction,
         no2_so2, co_o3, no2_o3_ratio,
         pm25_rolling
     ]])
 
-    # Model predicts log(AQI)
+    # Predict log AQI
     prediction_log = model.predict(data)[0]
 
-    # Convert back to AQI
+    # Convert back
     prediction = np.expm1(prediction_log)
 
     category = aqi_category(prediction)
 
     st.markdown("<div class='card'>", unsafe_allow_html=True)
 
-    st.success(f"**Predicted AQI:** {round(prediction,2)}")
+    st.success(f"Predicted AQI: {round(prediction,2)}")
 
     st.markdown(
         f"<h3 style='color:{category_color(category)}'>AQI Category: {category}</h3>",
